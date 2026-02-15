@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BIG TINAH AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-main: #000000;
+            --bg-sidebar: #0a0a0b;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-blue: #3b82f6;
+            --electric-blue: #2563eb;
+            --blue-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            --code-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .aura-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            background: radial-gradient(circle at 50% -10%, #1e40af, transparent 60%),
+                        radial-gradient(circle at 80% 80%, #1e3a8a, transparent 50%);
+            filter: blur(80px);
+        }
+
+        /* Neural Pulse Animation */
+        .neural-orb {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulseOrb 4s infinite ease-in-out;
+        }
+
+        .neural-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 38% 62% 63% 37% / 41% 44% 56% 59%;
+            animation: rotateCore 10s infinite linear;
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
+        }
+
+        @keyframes rotateCore {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #60a5fa, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        #content-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 40;
+            backdrop-filter: blur(4px);
+        }
+
+        #sidebar {
+            background-color: var(--bg-sidebar);
+            width: 280px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 1023px) {
+            #sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+            }
+            #sidebar.open { transform: translateX(0); }
+            #sidebar.open + #sidebar-overlay { display: block; }
+        }
+
+        #main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-main);
+            width: 100%;
+            position: relative;
+        }
+
+        #scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 20px;
+        }
+
+        .message-row {
+            display: flex;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.4s ease;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .avatar { width: 36px; height: 36px; margin-right: 20px; }
+        }
+
+        .user-avatar { background: #1e293b; color: #60a5fa; }
+        .ai-avatar { 
+            background: var(--blue-gradient); 
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .message-content {
+            max-width: 100%;
+            line-height: 1.6;
+            font-size: 15px;
+            color: #e2e8f0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .user-bubble {
+            background: #111827;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            display: inline-block;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .code-block-wrapper {
+            background: var(--code-bg);
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            width: 100%;
+        }
+
+        pre code {
+            display: block;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #93c5fd;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        /* History Styling */
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #94a3b8;
+            font-size: 14px;
+            group: hover;
+        }
+
+        .history-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .history-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .delete-hist-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+            padding: 4px;
+        }
+
+        .history-item:hover .delete-hist-btn {
+            opacity: 0.6;
+        }
+
+        .delete-hist-btn:hover {
+            opacity: 1 !important;
+            color: #ef4444;
+        }
+
+        .input-outer-wrapper {
+            background: linear-gradient(to top, black 70%, transparent);
+            padding: 10px 16px 24px;
+        }
+
+        .input-container {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+            background: #0f172a;
+            border-radius: 1.75rem;
+            padding: 6px 6px 6px 18px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s;
+        }
+
+        #user-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            flex: 1;
+            font-size: 16px;
+            resize: none;
+            max-height: 150px;
+            padding: 10px 0;
+        }
+
+        .action-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn-active {
+            color: #ffffff !important;
+            background: var(--electric-blue) !important;
+        }
+
+        .welcome-fade {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: welcomeIn 0.8s forwards ease-out;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+
+        @keyframes welcomeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #scroll-container::-webkit-scrollbar { width: 4px; }
+        #scroll-container::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="aura-container"></div>
+
+    <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black">
+        <div class="max-w-sm w-full text-center space-y-8">
+            <div class="space-y-4">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.4)]">
+                    <i class="fas fa-bolt text-white text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold tracking-tight">BIG <span class="gradient-text">TINAH</span></h2>
+                <p class="text-slate-400 text-sm">Neural Intelligence System</p>
+            </div>
+            
+            <div class="space-y-4">
+                <input id="login-name" type="text" placeholder="Access Name" class="w-full bg-[#0f172a] rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-blue-500 transition-all text-white">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-full font-bold hover:bg-blue-700 transition-all active:scale-95">
+                    Initialize Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-ui" class="hidden h-full flex flex-col">
+        <header class="flex-none px-4 py-3 flex justify-between items-center z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSidebar()" class="p-2 -ml-2 text-slate-400 lg:hidden">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <span class="text-base md:text-lg font-bold tracking-tight">BIG TINAH <span class="text-blue-500">AI</span></span>
+            </div>
+            <div id="user-display" class="text-[10px] md:text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20 max-w-[120px] truncate"></div>
+        </header>
+
+        <div id="content-wrapper">
+            <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+            
+            <aside id="sidebar" class="flex flex-col p-4">
+                <button onclick="startNewSession()" class="flex items-center justify-center gap-3 p-3 mb-6 bg-blue-600 rounded-full text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/20">
+                    <i class="fas fa-plus"></i> New Session
+                </button>
+                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3 px-2">Recent Sessions</div>
+                <div id="history-list" class="flex-1 overflow-y-auto space-y-1">
+                    <!-- History entries go here -->
+                </div>
+            </aside>
+
+            <main id="main-chat">
+                <div id="scroll-container" class="px-4 md:px-6 pt-6 md:pt-8">
+                    <div id="welcome-screen" class="max-w-4xl mx-auto py-8 md:py-16 text-center md:text-left relative">
+                        <div class="neural-orb"></div>
+                        <div class="neural-core"></div>
+                        <div class="neural-core" style="width: 140px; height: 140px; animation-duration: 15s; animation-direction: reverse; border-color: rgba(59, 130, 246, 0.1);"></div>
+
+                        <div class="welcome-fade">
+                            <h2 class="text-3xl md:text-5xl font-bold mb-8 md:mb-12"><span class="gradient-text">Systems Active.</span><br><span class="text-slate-800">Ready, <span id="welcome-name"></span>.</span></h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 welcome-fade delay-1">
+                            <div onclick="quickAction('Introduce yourself')" class="bg-[#0f172a]/80 backdrop-blur-sm p-5 rounded-2xl cursor-pointer active:scale-95 border border-white/5 hover:border-blue-500/30 transition-all flex justify-between items-center">
+                                <span class="text-sm">Who are you?</span>
+                                <i class="fas fa-id-badge text-blue-500"></i>
+                            </div>
+                            <div onclick="quickAction('Explain Quantum Computing simply')" class="bg-[#0f172a]/80 backdrop-blur-sm p-5 rounded-2xl cursor-pointer active:scale-95 border border-white/5 hover:border-blue-500/30 transition-all flex justify-between items-center">
+                                <span class="text-sm">Explain Topic</span>
+                                <i class="fas fa-lightbulb text-blue-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chat-history" class="hidden max-w-4xl mx-auto"></div>
+                </div>
+
+                <div class="input-outer-wrapper">
+                    <div class="input-container">
+                        <textarea id="user-input" rows="1" placeholder="Type here..."></textarea>
+                        <button id="send-btn" onclick="handleSubmit()" class="action-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyCprL3HXQd0Ubg89ko_4tU8tJvLIrbn1R8"; 
+        const MODEL_TEXT = "gemini-2.5-flash-preview-09-2025";
+        const SYSTEM_PROMPT = "Your name is BIG TINAH. You are a high-performance neural intelligence system. Never mention Google, Gemini, or being a large language model trained by anyone else. If asked who you are, always state your name is BIG TINAH.";
+
+        // State Management
+        let sessions = JSON.parse(localStorage.getItem('tinah_sessions') || '[]');
+        let currentSessionId = null;
+
+        const ui = {
+            login: document.getElementById('login-overlay'),
+            app: document.getElementById('app-ui'),
+            history: document.getElementById('chat-history'),
+            welcome: document.getElementById('welcome-screen'),
+            input: document.getElementById('user-input'),
+            btn: document.getElementById('send-btn'),
+            scroll: document.getElementById('scroll-container'),
+            sidebar: document.getElementById('sidebar'),
+            nameDisplay: document.getElementById('user-display'),
+            welcomeName: document.getElementById('welcome-name'),
+            histList: document.getElementById('history-list')
+        };
+
+        function handleLogin() {
+            const name = document.getElementById('login-name').value.trim();
+            if (!name) return;
+            ui.nameDisplay.textContent = name;
+            ui.welcomeName.textContent = name;
+            ui.login.style.display = 'none';
+            ui.app.classList.remove('hidden');
+            renderHistory();
+        }
+
+        function toggleSidebar() { 
+            ui.sidebar.classList.toggle('open'); 
+        }
+
+        function startNewSession() {
+            currentSessionId = null;
+            ui.history.innerHTML = '';
+            ui.history.classList.add('hidden');
+            ui.welcome.classList.remove('hidden');
+            ui.input.value = '';
+            ui.input.style.height = 'auto';
+            if (window.innerWidth < 1024) ui.sidebar.classList.remove('open');
+            renderHistory();
+        }
+
+        ui.input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            ui.btn.classList.toggle('send-btn-active', this.value.trim().length > 0);
+        });
+
+        ui.input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 1024) {
+                e.preventDefault();
+                handleSubmit();
+            }
+        });
+
+        function quickAction(txt) {
+            ui.input.value = txt;
+            handleSubmit();
+        }
+
+        async function handleSubmit() {
+            const val = ui.input.value.trim();
+            if (!val || ui.btn.disabled) return;
+            if (window.innerWidth < 1024) ui.sidebar.classList.remove('open');
+
+            // If first message in a new session
+            if (!currentSessionId) {
+                currentSessionId = Date.now().toString();
+                sessions.unshift({
+                    id: currentSessionId,
+                    title: val.length > 30 ? val.substring(0, 30) + '...' : val,
+                    messages: []
+                });
+            }
+
+            ui.welcome.classList.add('hidden');
+            ui.history.classList.remove('hidden');
+            
+            saveMessage(val, 'user');
+            addMessage(val, 'user');
+            
+            ui.input.value = '';
+            ui.input.style.height = 'auto';
+            ui.btn.classList.remove('send-btn-active');
+            setLoading(true);
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_TEXT}:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: val }] }],
+                        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }
+                    })
+                });
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    saveMessage(text, 'ai');
+                    addMessage(text, 'ai');
+                }
+            } catch (err) {
+                addMessage("System Error: Connection failed.", 'ai');
+            } finally {
+                setLoading(false);
+                renderHistory();
+            }
+        }
+
+        function saveMessage(text, role) {
+            const sess = sessions.find(s => s.id === currentSessionId);
+            if (sess) {
+                sess.messages.push({ role, text });
+                localStorage.setItem('tinah_sessions', JSON.stringify(sessions));
+            }
+        }
+
+        function addMessage(text, role) {
+            const row = document.createElement('div');
+            row.className = 'message-row';
+            
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${role === 'user' ? 'user-avatar' : 'ai-avatar'}`;
+            avatar.innerHTML = role === 'user' ? '<i class="fas fa-user text-xs"></i>' : '<i class="fas fa-bolt text-xs text-white"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = role === 'user' ? `<div class="user-bubble">${escapeHtml(text)}</div>` : parseResponse(text);
+            
+            row.appendChild(avatar);
+            row.appendChild(content);
+            ui.history.appendChild(row);
+            
+            setTimeout(() => {
+                ui.scroll.scrollTo({ top: ui.scroll.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function renderHistory() {
+            ui.histList.innerHTML = '';
+            sessions.forEach(sess => {
+                const div = document.createElement('div');
+                div.className = `history-item ${sess.id === currentSessionId ? 'active' : ''}`;
+                div.onclick = () => loadSession(sess.id);
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 truncate">
+                        <i class="far fa-comment-alt text-xs opacity-50"></i>
+                        <span class="truncate">${sess.title}</span>
+                    </div>
+                    <button onclick="deleteSession(event, '${sess.id}')" class="delete-hist-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                ui.histList.appendChild(div);
+            });
+        }
+
+        function loadSession(id) {
+            currentSessionId = id;
+            const sess = sessions.find(s => s.id === id);
+            if (!sess) return;
+
+            ui.welcome.classList.add('hidden');
+            ui.history.classList.remove('hidden');
+            ui.history.innerHTML = '';
+            
+            sess.messages.forEach(msg => addMessage(msg.text, msg.role));
+            if (window.innerWidth < 1024) ui.sidebar.classList.remove('open');
+            renderHistory();
+        }
+
+        function deleteSession(e, id) {
+            e.stopPropagation();
+            sessions = sessions.filter(s => s.id !== id);
+            localStorage.setItem('tinah_sessions', JSON.stringify(sessions));
+            if (currentSessionId === id) startNewSession();
+            else renderHistory();
+        }
+
+        function parseResponse(text) {
+            return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                return `
+                    <div class="code-block-wrapper">
+                        <div class="flex justify-between items-center px-4 py-2 bg-white/5 text-[10px] uppercase font-bold tracking-wider border-b border-white/5">
+                            <span>${lang || 'code'}</span>
+                            <button onclick="navigator.clipboard.writeText(\`${code.trim().replace(/`/g, '\\`')}\`)" class="hover:text-blue-400"><i class="far fa-copy"></i></button>
+                        </div>
+                        <pre><code>${escapeHtml(code.trim())}</code></pre>
+                    </div>
+                `;
+            }).replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-400">$1</strong>')
+              .split('\n').map(l => l.trim() ? `<p class="mb-4">${l}</p>` : '').join('');
+        }
+
+        function escapeHtml(text) {
+            const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function setLoading(s) {
+            ui.btn.disabled = s;
+            if (s) {
+                const loader = document.createElement('div');
+                loader.id = 'ai-loader';
+                loader.className = 'message-row';
+                loader.innerHTML = `
+                    <div class="avatar ai-avatar"><i class="fas fa-bolt text-xs text-white"></i></div>
+                    <div class="flex gap-1.5 pt-3">
+                        <div class="dot w-2 h-2 animate-bounce"></div><div class="dot w-2 h-2 animate-bounce" style="animation-delay: 0.1s"></div><div class="dot w-2 h-2 animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                `;
+                ui.history.appendChild(loader);
+                ui.scroll.scrollTo({ top: ui.scroll.scrollHeight, behavior: 'smooth' });
+            } else {
+                const loader = document.getElementById('ai-loader');
+                if (loader) loader.remove();
+            }
+        }
+    </script>
+</body>
+</html>
